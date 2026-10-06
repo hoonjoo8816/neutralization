@@ -4,20 +4,30 @@ function profileValues(){return studentProfile?[studentProfile.grade,studentProf
 function safeCSV(value){const str=String(value);return /^[=+@-]/.test(str)&&!/^[-+]\d+(\.\d+)?$/.test(str)?"'"+str:str;}
 function shortTime(time){return time.slice(11,19);}
 function timerElapsed(){return timerStartedAt===null?null:(performance.now()-timerStartedAt)/1000;}
-function renderTimer(){const seconds=timerElapsed();document.querySelector('#timerDisplay').textContent=seconds===null?'00:00':String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(Math.floor(seconds%60)).padStart(2,'0');document.querySelector('#timerNote').textContent=seconds===null?'용액 투입 후 리셋을 누르면 시작합니다.':seconds>=120?'2분 경과 · 센서값이 안정됐는지 확인하세요.':'관찰 중 · 2분을 기준으로 변화를 확인하세요.';}
+function renderTimer(){const seconds=timerElapsed();document.querySelector('#timerDisplay').textContent=seconds===null?'00:00':String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(Math.floor(seconds%60)).padStart(2,'0');document.querySelector('#timerNote').textContent=seconds===null?'용액 투입 후 리셋을 누르면 시작합니다.':seconds>=120?'2분 경과 · 측정점을 저장하고 변화도 관찰하세요.':'관찰 중 · 2분을 기준으로 변화를 확인하세요.';}
 document.querySelector('#resetTimer').onclick=()=>{timerStartedAt=performance.now();renderTimer();};
 setInterval(renderTimer,250);
 document.querySelector('#studentForm').onsubmit=event=>{
  event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
  const candidate=Object.fromEntries(new FormData(form));for(const key of ['studentName','groupName']){candidate[key]=candidate[key].trim();const field=form.elements[key];field.setCustomValidity(candidate[key]?'':'공백 없이 정보를 입력하세요.');if(!candidate[key]){field.reportValidity();return;}}
- studentProfile=candidate;document.querySelector('#studentSummary').textContent=candidate.grade+'학년 '+candidate.classroom+'반 '+candidate.studentNumber+'번 · '+candidate.studentName+' · '+candidate.groupName;
- document.querySelector('#welcome').hidden=true;document.querySelector('#experiment').hidden=false;
+ guideFromExperiment=false;document.querySelector('#guideBack').textContent='학생 정보로 돌아가기';studentProfile=candidate;document.querySelector('#studentSummary').textContent=candidate.grade+'학년 '+candidate.classroom+'반 '+candidate.studentNumber+'번 · '+candidate.studentName+' · '+candidate.groupName;
+ showNotebookPage('guide');
  if(typeof pointRevision!=='undefined'&&points.length)pointRevision++;
  if(typeof exportedCount!=='undefined'&&records.length)exportedCount=-1;
  window.scrollTo(0,0);
 };
 for(const id of ['studentName','groupName'])document.querySelector('#'+id).oninput=event=>event.target.setCustomValidity('');
-document.querySelector('#editProfile').onclick=()=>{document.querySelector('#welcome').hidden=false;document.querySelector('#experiment').hidden=true;window.scrollTo(0,0);};
+function showNotebookPage(page){
+ for(const id of ['welcome','guide','experiment'])document.querySelector('#'+id).hidden=id!==page;
+ window.scrollTo(0,0);
+ if(page==='guide')document.querySelector('#guideTitle').focus();
+}
+let guideFromExperiment=false;
+document.querySelector('#editProfile').onclick=()=>showNotebookPage('welcome');
+document.querySelector('#openGuide').onclick=()=>{guideFromExperiment=true;document.querySelector('#guideBack').textContent='측정 화면으로 돌아가기';showNotebookPage('guide');};
+document.querySelector('#guideBack').onclick=()=>showNotebookPage(guideFromExperiment?'experiment':'welcome');
+document.querySelector('#beginExperiment').onclick=()=>{guideFromExperiment=true;showNotebookPage('experiment');};
+
 function renderPointsTable(){
  pointRows.replaceChildren();document.querySelector('#pointCount').textContent=points.length+'개';document.querySelector('#pointsEmpty').hidden=points.length>0;
  for(const p of points.slice(-10).reverse()){
