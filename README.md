@@ -5,7 +5,7 @@
 ## GitHub Pages 배포
 
 1. GitHub에 공개 저장소를 만듭니다.
-2. 이 폴더 안의 index.html, style.css, notebook.js, app.js, charts.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
+2. 이 폴더 안의 index.html, style.css, notebook.js, app.js, charts.js, analysis.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
 3. 저장소 Settings → Pages를 엽니다.
 4. Build and deployment의 Source를 Deploy from a branch로 선택합니다.
 5. Branch는 main, 폴더는 /(root)로 선택하고 Save를 누릅니다.
@@ -24,3 +24,16 @@ Windows 또는 macOS의 최신 Chrome에서 웹주소를 엽니다. 학생 정�
 ## 글꼴
 
 나눔고딕을 포함합니다. 글꼴 라이선스는 fonts/OFL.txt를 참고하세요.
+
+
+## 결과 분석·정리
+
+- 측정 화면의 ‘결과 분석·정리’에서 기록 종료 후 현재 데이터의 사본을 가져옵니다.
+- 첫 화면의 ‘저장한 CSV로 결과 분석하기’에서는 측정점 CSV와 전체 데이터 CSV를 다시 열 수 있습니다.
+- 한 실험의 두 파일을 사용합니다. 학생 정보 또는 세트가 다르면 함께 불러오지 않습니다.
+- 부피·시간 그래프와 관찰 요약을 확인하고 결과 해석, 결론, 한계와 개선 방법을 작성합니다.
+- 작성 내용 저장(JSON)은 데이터와 글을 함께 보관하고 다음에 복원합니다.
+- 보고서 저장(HTML)은 그래프와 측정점 표, 작성 내용을 담습니다. 인쇄에서 PDF로도 저장할 수 있습니다.
+- 자동 요약은 중화 지점을 자동 판정하지 않습니다. 범위 밖 pH는 추정값이며 최고 온도는 저장한 측정점 기준입니다.
+- 자동 제출 기능은 없습니다. 보고서와 원본 CSV를 교사가 지정한 곳에 제출합니다.
+- 결과 작성 내용은 브라우저 메모리에만 있습니다. 닫기 전에 작성 내용 파일을 저장하세요.

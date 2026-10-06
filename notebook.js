@@ -18,9 +18,10 @@ document.querySelector('#studentForm').onsubmit=event=>{
 };
 for(const id of ['studentName','groupName'])document.querySelector('#'+id).oninput=event=>event.target.setCustomValidity('');
 function showNotebookPage(page){
- for(const id of ['welcome','guide','experiment'])document.querySelector('#'+id).hidden=id!==page;
+ for(const id of ['welcome','guide','experiment','analysis'])document.querySelector('#'+id).hidden=id!==page;
  window.scrollTo(0,0);
  if(page==='guide')document.querySelector('#guideTitle').focus();
+ if(page==='analysis')document.querySelector('#analysisTitle').focus();
 }
 let guideFromExperiment=false;
 document.querySelector('#editProfile').onclick=()=>showNotebookPage('welcome');
