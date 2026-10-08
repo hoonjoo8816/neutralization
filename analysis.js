@@ -1,9 +1,8 @@
 /* 분석은 측정 기록의 사본을 사용합니다. 파일과 작성 내용은 서버로 전송하지 않습니다. */
 const resultFieldIds=['resultPrediction','resultTrends','resultRole','resultNeutralization','resultTheory','resultExtension','resultConclusion','resultLimitations','resultColor'];
-const requiredQuestionIds=['resultPrediction','resultTrends','resultRole'];
-const choiceQuestionIds=['resultNeutralization','resultTheory','resultExtension'];
+const requiredQuestionIds=['resultPrediction','resultTrends','resultRole','resultNeutralization','resultTheory','resultExtension'];
 const authorIds=['authorGrade','authorClassroom','authorNumber','authorName'];
-const resultFieldLabels=['1. 예상과 생각의 변화 (필수)','2. 내가 선택한 핵심 근거 (필수)','3. 나의 행동이 실험에 미친 영향 (필수)','4. 서로 다른 관찰 결과 연결하기 (선택)','5. 같은 농도에 대한 나의 설명 (선택)','6. 내가 설계하는 후속 탐구 (선택)','나의 결론','실험의 한계와 개선 방법 (추가 메모)','색깔 관찰 (추가 메모)'];
+const resultFieldLabels=["1. 예상과 실제 결과 비교하기","2. 그래프에서 중요한 결과 찾기","3. 내가 실험에서 한 일 돌아보기","4. 온도, pH, 색깔의 변화 비교하기","5. 같은 5% 농도에 대해 생각하기","6. 다음 실험 계획하기","나의 결론","실험의 한계와 개선 방법 (추가 메모)","색깔 관찰 (추가 메모)"];
 let analysisData={profile:null,set:null,points:[],live:[],sources:[]},analysisDirty=false,analysisReturnPage='welcome';
 const analysisEl=id=>document.querySelector('#'+id);
 function parseLabCSV(text){
@@ -88,7 +87,7 @@ function renderAnalysis(){
  analysisEl('analysisRows').replaceChildren();for(const p of d.points){const tr=document.createElement('tr');for(const v of [p.id,p.volume.toFixed(2),p.temperature.toFixed(2),p.ph.toFixed(2),p.color,p.waitSeconds===null?'—':p.waitSeconds.toFixed(1),p.state]){const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td);}analysisEl('analysisRows').appendChild(tr);}refreshAnalysisCompletion();
 }
 function reportValues(){return Object.fromEntries(resultFieldIds.map(id=>[id,analysisEl(id).value]));}
-function refreshAnalysisCompletion(){const required=requiredQuestionIds.filter(id=>analysisEl(id).value.trim()).length,choice=choiceQuestionIds.filter(id=>analysisEl(id).value.trim()).length;analysisEl('analysisCompletion').textContent=`측정점 ${analysisData.points.length}개 · 연속 기록 ${analysisData.live.length}개 · 필수 질문 ${required}/3개 · 선택 질문 ${choice}/3개 (2개 이상) · 결론 ${analysisEl('resultConclusion').value.trim()?'작성':'미작성'}`+(analysisDirty?' · 저장하지 않은 변경 내용이 있습니다.':'');}
+function refreshAnalysisCompletion(){const completed=requiredQuestionIds.filter(id=>analysisEl(id).value.trim()).length;analysisEl('analysisCompletion').textContent=`측정점 ${analysisData.points.length}개 · 연속 기록 ${analysisData.live.length}개 · 질문 ${completed}/6개 · 결론 ${analysisEl('resultConclusion').value.trim()?'작성':'미작성'}`+(analysisDirty?' · 저장하지 않은 변경 내용이 있습니다.':'');}
 function analysisStatus(text){analysisEl('analysisImportStatus').textContent=text;}
 function openAnalysisPage(from){analysisReturnPage=from;showNotebookPage('analysis');renderAnalysis();}
 analysisEl('openAnalysis').onclick=()=>openAnalysisPage('experiment');analysisEl('openSavedAnalysis').onclick=()=>openAnalysisPage('welcome');analysisEl('analysisBack').onclick=()=>showNotebookPage(analysisReturnPage);
@@ -130,7 +129,7 @@ analysisEl('analysisDraft').onchange=async event=>{
  }catch(e){analysisStatus('작성 내용을 열지 못했습니다: '+e.message);}finally{event.target.value='';}
 };
 function escapeReport(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function canSaveReport(){if(!analysisData.profile||!analysisData.points.length&&!analysisData.live.length){analysisStatus('먼저 분석할 데이터를 가져오세요.');return false;}const a=reportAuthor();const valid=[['authorGrade',3],['authorClassroom',99],['authorNumber',99]];for(const [id,max] of valid){const n=Number(a[id]);if(!Number.isInteger(n)||n<1||n>max){analysisStatus('보고서를 작성하는 학생의 학년·반·번호를 확인하세요.');analysisEl(id).focus();return false;}}if(!a.authorName){analysisStatus('보고서 작성 학생의 이름을 입력하세요.');analysisEl('authorName').focus();return false;}const missing=requiredQuestionIds.find(id=>!analysisEl(id).value.trim());if(missing){analysisStatus('필수 질문 1~3번에 모두 답해주세요.');analysisEl(missing).focus();return false;}if(choiceQuestionIds.filter(id=>analysisEl(id).value.trim()).length<2){analysisStatus('선택 질문 4~6번 중 두 문항 이상에 답해주세요.');analysisEl(choiceQuestionIds.find(id=>!analysisEl(id).value.trim())).focus();return false;}if(!analysisEl('resultConclusion').value.trim()){analysisStatus('나의 결론을 작성한 뒤 보고서를 저장하세요.');analysisEl('resultConclusion').focus();return false;}return true;}
+function canSaveReport(){if(!analysisData.profile||!analysisData.points.length&&!analysisData.live.length){analysisStatus('먼저 분석할 데이터를 가져오세요.');return false;}const a=reportAuthor();const valid=[['authorGrade',3],['authorClassroom',99],['authorNumber',99]];for(const [id,max] of valid){const n=Number(a[id]);if(!Number.isInteger(n)||n<1||n>max){analysisStatus('보고서를 작성하는 학생의 학년·반·번호를 확인하세요.');analysisEl(id).focus();return false;}}if(!a.authorName){analysisStatus('보고서 작성 학생의 이름을 입력하세요.');analysisEl('authorName').focus();return false;}const missing=requiredQuestionIds.find(id=>!analysisEl(id).value.trim());if(missing){analysisStatus('1~6번 질문에 모두 답해주세요.');analysisEl(missing).focus();return false;}if(!analysisEl('resultConclusion').value.trim()){analysisStatus('나의 결론을 작성한 뒤 보고서를 저장하세요.');analysisEl('resultConclusion').focus();return false;}return true;}
 function buildAnalysisReport(){
  const profile=escapeReport(formatAnalysisProfile(analysisData.profile,analysisData.set));const charts=[['analysisVolumeTemperature','투입 부피–온도'],['analysisVolumePH','투입 부피–pH'],['analysisTimeTemperature','시간–온도'],['analysisTimePH','시간–pH']].map(([id,title])=>'<section class="chart"><h3>'+title+'</h3>'+analysisEl(id).outerHTML+'<p>'+escapeReport(analysisEl(id+'Note').textContent)+'</p></section>').join('');
  const answers=resultFieldIds.map((id,i)=>'<section><h2>'+resultFieldLabels[i]+'</h2><p class="answer">'+escapeReport(analysisEl(id).value.trim()||'미작성')+'</p></section>').join('');
