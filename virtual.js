@@ -46,6 +46,7 @@ virtualEl('virtualCSV').onchange=async event=>{
 };
 virtualEl('clearVirtualData').onclick=()=>{virtualData=null;analysisDirty=true;renderVirtualComparison();refreshAnalysisCompletion();virtualStatus('가상 실험 데이터만 비웠습니다. 실제 측정 데이터와 답변은 유지됩니다.');};
 function renderVirtualComparison(){
+ if(typeof markSessionChanged==='function')markSessionChanged();
  const vp=virtualPoints();drawComparisonChart('comparisonTemperature',analysisData.points,vp,'temperature','온도(℃)');drawComparisonChart('comparisonPH',analysisData.points,vp,'ph','pH');
  const summary=virtualEl('virtualSummary'),body=virtualEl('virtualRows');body.replaceChildren();
  if(!virtualData){summary.textContent='가상 CSV를 업로드하면 비교 그래프가 나타납니다. 실제 측정 데이터는 위의 데이터 불러오기에서 가져오세요.';return;}

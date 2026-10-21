@@ -2,7 +2,7 @@
 const connectButton=document.querySelector('#connect'),disconnectButton=document.querySelector('#disconnect'),statusEl=document.querySelector('#status'),valueEl=document.querySelector('#value'),updated=document.querySelector('#updated'),log=document.querySelector('#log'),phValue=document.querySelector('#phValue'),phNote=document.querySelector('#phNote');
 let port=null,reader=null,stopping=false,lastReceived=0,readingTask=null;
 const setNumber=document.querySelector('#setNumber');
-function setSignal(state){const lights=document.querySelector('#connectionLights');lights.setAttribute('data-state',state);lights.setAttribute('aria-label',state==='receiving'?'측정값 정상 수신':state==='waiting'?'연결 중 또는 측정 신호 확인 필요':'연결 안 됨');setNumber.disabled=!!port||state==='waiting'||recording;}
+function setSignal(state){const lights=document.querySelector('#connectionLights');lights.setAttribute('data-state',state);lights.setAttribute('aria-label',state==='receiving'?'측정값 정상 수신':state==='waiting'?'연결 중 또는 측정 신호 확인 필요':'연결 안 됨');setNumber.disabled=!!port||state==='waiting'||recording||records.length>0||points.length>0;}
 function setConnectionStatus(message,state){statusEl.textContent=message;setSignal(state);}
 function phDisplayColor(ph){const t=Math.max(0,Math.min(14,ph))/14;return `rgb(${Math.round(198+(44-198)*t)}, ${Math.round(52+(98-52)*t)}, ${Math.round(52+(191-52)*t)})`;}
 const startRecord=document.querySelector('#startRecord'),stopRecord=document.querySelector('#stopRecord'),download=document.querySelector('#download'),recordStatus=document.querySelector('#recordStatus'),recordTable=document.querySelector('#records');
@@ -41,7 +41,7 @@ function refreshRecording(message){
  startRecord.disabled=recording||!lastReceived;
  startRecord.textContent=records.length?'기록 재개':'기록 시작';
  stopRecord.disabled=!recording;download.disabled=recording||!records.length;
- recordStatus.textContent=(message||(recording?'기록 중':records.length?'기록 종료':'기록 대기'))+' · '+records.length+'개';refreshPoints();setNumber.disabled=recording||!!port;
+ recordStatus.textContent=(message||(recording?'기록 중':records.length?'기록 종료':'기록 대기'))+' · '+records.length+'개';refreshPoints();setNumber.disabled=recording||!!port||records.length>0||points.length>0;
 }
 function stopRecording(message){recording=false;refreshRecording(message);}
 function localTimestamp(date){const pad=(n,width=2)=>String(n).padStart(width,'0');return date.getFullYear()+'-'+pad(date.getMonth()+1)+'-'+pad(date.getDate())+' '+pad(date.getHours())+':'+pad(date.getMinutes())+':'+pad(date.getSeconds())+'.'+pad(date.getMilliseconds(),3);}

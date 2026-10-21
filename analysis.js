@@ -6,10 +6,10 @@ const resultFieldLabels=["1. 예상과 실제 결과 비교하기","2. 그래프
 let analysisData={profile:null,set:null,points:[],live:[],sources:[]},analysisDirty=false,analysisReturnPage='welcome';
 const analysisEl=id=>document.querySelector('#'+id);
 function parseLabCSV(text){
- if(text.length>10*1024*1024)throw Error('파일이 너무 큽니다. 10 MB 이하의 원본 CSV를 선택하세요.');
+ if(text.length>50*1024*1024)throw Error('파일이 너무 큽니다. 50 MB 이하의 원본 CSV를 선택하세요.');
  text=text.replace(/^\uFEFF/,'');const rows=[];let row=[],value='',quoted=false,closed=false;
  const cell=()=>{row.push(value);value='';closed=false;};
- const line=()=>{cell();if(row.some(v=>v!==''))rows.push(row);row=[];if(rows.length>5001)throw Error('한 파일에 5,000개 이하의 측정 기록을 사용하세요.');};
+ const line=()=>{cell();if(row.some(v=>v!==''))rows.push(row);row=[];if(rows.length>50001)throw Error('한 파일에 50,000개 이하의 측정 기록을 사용하세요.');};
  for(let i=0;i<text.length;i++){
   const c=text[i];if(quoted){if(c==='"'){if(text[i+1]==='"'){value+='"';i++;}else{quoted=false;closed=true;}}else value+=c;continue;}
   if(c==='"'){if(value!==''||closed)throw Error('CSV의 따옴표 형식이 올바르지 않습니다. 원본 파일을 사용하세요.');quoted=true;}
@@ -61,7 +61,7 @@ function csvToAnalysis(text,name){
 function validateAnalysisDataset(data){
  const profile=cleanProfile(data.profile),set=finiteValue(data.set,'세트 번호');if(!Number.isInteger(set)||set<1||set>8)throw Error('세트 번호를 확인하세요.');
  const out={profile,set,points:[],live:[],sources:[]};
- for(const kind of ['points','live']){if(!Array.isArray(data[kind])||data[kind].length>5000)throw Error('측정 기록은 종류별로 5,000개 이하이어야 합니다.');out[kind]=data[kind].map(r=>cleanAnalysisRow(r,kind));if(out[kind].some(r=>r.setNumber!==set))throw Error('한 실험의 세트 번호가 일치하지 않습니다.');out[kind].sort((a,b)=>a.elapsed-b.elapsed);}
+ for(const kind of ['points','live']){if(!Array.isArray(data[kind])||data[kind].length>50000)throw Error('측정 기록은 종류별로 50,000개 이하이어야 합니다.');out[kind]=data[kind].map(r=>cleanAnalysisRow(r,kind));if(out[kind].some(r=>r.setNumber!==set))throw Error('한 실험의 세트 번호가 일치하지 않습니다.');out[kind].sort((a,b)=>a.elapsed-b.elapsed);}
  if(!out.points.length&&!out.live.length)throw Error('분석할 측정 기록이 없습니다.');
  const ids=new Set();let previous=-Infinity;for(const p of out.points){if(ids.has(p.id))throw Error('측정점 번호가 중복됩니다. 한 실험의 CSV를 사용하세요.');ids.add(p.id);if(p.volume<previous)throw Error('시간 순서대로 투입 부피가 감소합니다. 한 실험의 원본 CSV를 확인하세요.');previous=p.volume;}
  if(Array.isArray(data.sources))out.sources=data.sources.slice(0,4).map(s=>String(s).slice(0,200));return out;
@@ -76,6 +76,7 @@ function summarizeAnalysis(data){
 function formatAnalysisProfile(p,set){return p?`${p.grade}학년 ${p.classroom}반 ${p.studentNumber}번 · ${p.studentName} · ${p.groupName} · ${set}번 세트`:'CSV에 포함된 학생 정보가 여기에 표시됩니다.';}
 function appendStat(label,value,note){const card=document.createElement('div');card.className='stat-card';for(const [tag,text] of [['span',label],['strong',value],['small',note]]){const el=document.createElement(tag);el.textContent=text;card.appendChild(el);}analysisEl('analysisStats').appendChild(card);}
 function renderAnalysis(){
+ if(typeof markSessionChanged==='function')markSessionChanged();
  const d=analysisData,s=summarizeAnalysis(d);analysisEl('analysisProfile').textContent=formatAnalysisProfile(d.profile,d.set);analysisEl('analysisSource').textContent=`측정점 ${d.points.length}개 · 연속 기록 ${d.live.length}개`+(d.sources.length?' · '+d.sources.join(' / '):'');analysisEl('analysisStats').replaceChildren();
  appendStat('저장한 측정점 중 최고 온도',s.peak?`${s.peak.temperature.toFixed(2)} ℃ · ${s.peak.volume.toFixed(2)} mL`:'측정점 데이터 필요','중화 지점으로 자동 판정하지 않습니다.');
  appendStat('처음 붉은색이 기록된 측정점',s.firstRed?`${s.firstRed.volume.toFixed(2)} mL · pH ${s.firstRed.ph.toFixed(2)}`:'붉은색 기록 없음','첫 기록 이전의 정확한 색 변화 시점은 알 수 없습니다.');
@@ -99,7 +100,7 @@ analysisEl('analysisCSV').onchange=async event=>{
  const files=Array.from(event.target.files);if(!files.length)return;analysisEl('analysisCSV').disabled=true;
  try{
   if(files.length>2)throw Error('측정점 CSV와 전체 데이터 CSV를 하나씩, 최대 두 개 선택하세요.');
-  const imported=[];for(const file of files){if(file.size>10*1024*1024)throw Error('10 MB 이하의 CSV를 선택하세요.');imported.push(csvToAnalysis(await file.text(),file.name));}
+  const imported=[];for(const file of files){if(file.size>50*1024*1024)throw Error('50 MB 이하의 CSV를 선택하세요.');imported.push(csvToAnalysis(await file.text(),file.name));}
   if(new Set(imported.map(x=>x.kind)).size!==imported.length)throw Error('같은 종류의 파일 두 개를 함께 선택할 수 없습니다.');
   const first=imported[0];if(imported.some(x=>profileKey(x.profile,x.set)!==profileKey(first.profile,first.set)))throw Error('두 CSV의 학생 정보 또는 세트 번호가 다릅니다. 같은 실험의 두 파일을 선택하세요.');
   const keep=analysisData.profile&&profileKey(analysisData.profile,analysisData.set)===profileKey(first.profile,first.set);let candidate={profile:first.profile,set:first.set,points:keep?analysisData.points:[],live:keep?analysisData.live:[],sources:[]};
@@ -115,14 +116,14 @@ function reportAuthor(){return Object.fromEntries(authorIds.map(id=>[id,analysis
 function validateReportAuthor(value){if(!value||typeof value!=='object')throw Error('작성 학생 정보 형식을 확인하세요.');const out={};for(const id of authorIds){if(typeof value[id]!=='string'||value[id].length>100)throw Error('작성 학생 정보 형식을 확인하세요.');out[id]=value[id];}return out;}
 function authorDescription(){const a=reportAuthor();return a.authorGrade+'학년 '+a.authorClassroom+'반 '+a.authorNumber+'번 · '+a.authorName;}
 function saveAnalysisFile(filename,text,type){const url=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function analysisFilename(extension){return 'neutralization_report_'+localTimestamp(new Date()).replace(/[: .]/g,'-')+'.'+extension;}
+function analysisFilename(extension){const a=reportAuthor();const identity=[a.authorGrade+'학년',a.authorClassroom+'반',a.authorNumber+'번',a.authorName].join('_').replace(/[^가-힣a-zA-Z0-9_-]/g,'_');return identity+'_neutralization_report_'+localTimestamp(new Date()).replace(/[: .]/g,'-')+'.'+extension;}
 analysisEl('saveAnalysisDraft').onclick=()=>{
  try{const virtual=typeof exportVirtualData==='function'?exportVirtualData():null;if(!analysisData.profile&&!virtual){analysisStatus('먼저 실제 측정 데이터 또는 가상 실험 CSV를 가져오세요.');return;}
  const draft={format:'neutralization-lab-report',version:3,savedAt:localTimestamp(new Date()),data:analysisData.profile?analysisData:null,virtual,author:reportAuthor(),answers:reportValues()};saveAnalysisFile(analysisFilename('json'),JSON.stringify(draft,null,2),'application/json;charset=utf-8');analysisDirty=false;refreshAnalysisCompletion();analysisStatus('가상·실제 데이터와 작성 내용 파일을 저장했습니다. 다음에 이 파일을 열어 이어서 작성할 수 있습니다.');}catch(e){analysisStatus('작성 내용을 저장하지 못했습니다: '+e.message);}
 };
 analysisEl('analysisDraft').onchange=async event=>{
  const file=event.target.files[0];if(!file)return;
- try{if(file.size>10*1024*1024)throw Error('10 MB 이하의 작성 내용 파일을 선택하세요.');const draft=JSON.parse(await file.text());if(draft.format!=='neutralization-lab-report'||![1,2,3].includes(draft.version))throw Error('이 프로그램의 작성 내용 파일이 아닙니다.');const virtual=draft.version===3?validateVirtualData(draft.virtual):null;const data=draft.version===3&&draft.data===null?{profile:null,set:null,points:[],live:[],sources:[]}:validateAnalysisDataset(draft.data);if(!data.profile&&!virtual)throw Error('분석할 실험 데이터가 없습니다.');const answers={};for(const id of resultFieldIds){const value=draft.version===1&&id==='resultRole'?'':draft.answers?.[id];if(typeof value!=='string'||value.length>5000)throw Error('작성 내용 형식을 확인하세요.');answers[id]=value;}
+ try{if(file.size>50*1024*1024)throw Error('50 MB 이하의 작성 내용 파일을 선택하세요.');const draft=JSON.parse(await file.text());if(draft.format!=='neutralization-lab-report'||![1,2,3].includes(draft.version))throw Error('이 프로그램의 작성 내용 파일이 아닙니다.');const virtual=draft.version===3?validateVirtualData(draft.virtual):null;const data=draft.version===3&&draft.data===null?{profile:null,set:null,points:[],live:[],sources:[]}:validateAnalysisDataset(draft.data);if(!data.profile&&!virtual)throw Error('분석할 실험 데이터가 없습니다.');const answers={};for(const id of resultFieldIds){const value=draft.version===1&&id==='resultRole'?'':draft.answers?.[id];if(typeof value!=='string'||value.length>5000)throw Error('작성 내용 형식을 확인하세요.');answers[id]=value;}
   const author=draft.version===1?Object.fromEntries(authorIds.map(id=>[id,''])):validateReportAuthor(draft.author);
   if(analysisDirty){analysisStatus('현재 분석에 저장하지 않은 변경 내용이 있습니다. 작성 내용 저장 후 다시 파일을 선택하세요.');return;}
   analysisData=data;if(typeof restoreVirtualData==='function')restoreVirtualData(virtual);for(const id of authorIds)analysisEl(id).value=author[id];for(const id of resultFieldIds)analysisEl(id).value=answers[id];analysisDirty=false;renderAnalysis();analysisStatus(draft.version===1?'이전 작성 내용을 복원했습니다. 새 질문에 맞게 답변을 검토하고 작성 학생 정보와 나의 역할을 추가하세요.':'저장한 데이터와 개인 작성 내용을 복원했습니다.');

@@ -10,6 +10,7 @@ setInterval(renderTimer,250);
 document.querySelector('#studentForm').onsubmit=event=>{
  event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
  const candidate=Object.fromEntries(new FormData(form));for(const key of ['studentName','groupName']){candidate[key]=candidate[key].trim();const field=form.elements[key];field.setCustomValidity(candidate[key]?'':'공백 없이 정보를 입력하세요.');if(!candidate[key]){field.reportValidity();return;}}
+ if((records.length||points.length)&&studentProfile&&profileKey(studentProfile,Number(setNumber.value))!==profileKey(candidate,Number(setNumber.value))){alert('측정 기록의 학생 정보는 변경할 수 없습니다. 개인 보고서는 결과 분석 화면의 작성 학생 정보를 입력하세요. 다른 조의 실험은 전체 이어하기 파일 저장 후 새 실험 시작을 선택하세요.');return;}
  guideFromExperiment=false;document.querySelector('#guideBack').textContent='학생 정보로 돌아가기';studentProfile=candidate;document.querySelector('#studentSummary').textContent=candidate.grade+'학년 '+candidate.classroom+'반 '+candidate.studentNumber+'번 · '+candidate.studentName+' · '+candidate.groupName;
  showNotebookPage('guide');
  if(typeof pointRevision!=='undefined'&&points.length)pointRevision++;
@@ -20,6 +21,7 @@ for(const id of ['studentName','groupName'])document.querySelector('#'+id).oninp
 function showNotebookPage(page){
  for(const id of ['welcome','guide','experiment','analysis'])document.querySelector('#'+id).hidden=id!==page;
  window.scrollTo(0,0);
+ if(typeof markSessionChanged==='function')markSessionChanged();
  if(page==='guide')document.querySelector('#guideTitle').focus();
  if(page==='analysis')document.querySelector('#analysisTitle').focus();
 }
