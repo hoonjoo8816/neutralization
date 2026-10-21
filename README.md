@@ -5,7 +5,7 @@
 ## GitHub Pages 배포
 
 1. GitHub에 공개 저장소를 만듭니다.
-2. 이 폴더 안의 index.html, style.css, notebook.js, app.js, charts.js, analysis.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
+2. 이 폴더 안의 index.html, style.css, notebook.js, app.js, charts.js, analysis.js, virtual.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
 3. 저장소 Settings → Pages를 엽니다.
 4. Build and deployment의 Source를 Deploy from a branch로 선택합니다.
 5. Branch는 main, 폴더는 /(root)로 선택하고 Save를 누릅니다.
@@ -37,3 +37,7 @@ Windows 또는 macOS의 최신 Chrome에서 웹주소를 엽니다. 학생 정�
 - 자동 요약은 중화 지점을 자동 판정하지 않습니다. 범위 밖 pH는 추정값이며 최고 온도는 저장한 측정점 기준입니다.
 - 자동 제출 기능은 없습니다. 보고서와 원본 CSV를 교사가 지정한 곳에 제출합니다.
 - 결과 작성 내용은 브라우저 메모리에만 있습니다. 닫기 전에 작성 내용 파일을 저장하세요.
+
+## 가상 실험 비교
+
+ChemCollective 비커 CSV 원본을 분석 화면에서 선택합니다. 초기 전체 부피 기본값은 32 mL(염산 30 mL + 지시약 2 mL)입니다. 다른 조건이면 수정합니다. L은 mL로, K는 ℃로 변환하며 초기 전체 부피를 빼 누적 투입 부피를 계산합니다. 빈 비커와 초기 부피 미만 기록은 비교에서 제외하고, 없는 0 mL 값은 만들지 않습니다. 실제 측정점과 가상 실험을 공통 부피 축의 두 그래프로 비교합니다. 농도·지시약 양·온도·기록 시점·열 교환 조건 차이를 함께 해석합니다. 작성 내용(JSON v3)에는 가상 데이터와 설정이 포함되며, 실제 데이터 없이 가상 데이터만 있어도 이어서 작성할 파일을 저장할 수 있습니다. 이전 JSON v1/v2도 복원합니다. HTML 보고서와 인쇄에는 불러온 비교 그래프가 포함됩니다.
