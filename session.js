@@ -12,7 +12,7 @@ function validateSession(s){
  if(!s||s.format!=='neutralization-session'||s.version!==1||!Number.isFinite(s.savedAt))throw Error('이 프로그램의 전체 이어하기 파일이 아닙니다.');
  const strings=(obj,ids,max)=>{if(!obj||ids.some(id=>typeof obj[id]!=='string'||obj[id].length>max))throw Error('작성 내용 형식을 확인하세요.');};
  strings(s.form,['grade','classroom','studentNumber','studentName','groupName'],100);strings(s.predictions,predictionIds,1000);strings(s.answers,resultFieldIds,5000);validateReportAuthor(s.author);if(s.profile)cleanProfile(s.profile);
- const m=s.measurement;if(!m||!Number.isInteger(m.set)||m.set<1||m.set>8||!Array.isArray(m.records)||!Array.isArray(m.points)||m.records.length>50000||m.points.length>50000)throw Error('측정 기록 형식을 확인하세요.');
+ const m=s.measurement;if(!m||!Number.isInteger(m.set)||m.set<1||m.set>9||!Array.isArray(m.records)||!Array.isArray(m.points)||m.records.length>50000||m.points.length>50000)throw Error('측정 기록 형식을 확인하세요.');
  if((m.records.length||m.points.length)&&(!s.profile||!Number.isFinite(m.startedAt)||m.startedAt<=0))throw Error('측정 시작 정보가 없습니다.');
  if(m.records.length||m.points.length)validateAnalysisDataset({profile:s.profile,set:m.set,live:m.records,points:m.points});
  for(const p of m.points){for(const key of ['initial','current','raw'])if(!Number.isFinite(p[key])||p[key]<0)throw Error('측정점 눈금 정보를 확인하세요.');if(p.current<p.initial||Math.abs(p.current-p.initial-p.volume)>0.011||typeof p.sampleTime!=='string')throw Error('측정점 부피 정보를 확인하세요.');}

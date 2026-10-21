@@ -29,7 +29,7 @@ function cleanAnalysisRow(r,kind){
  const ph=finiteValue(r.ph,'pH'),temperature=finiteValue(r.temperature,'온도',kind==='live'),elapsed=finiteValue(r.elapsed,'경과 시간');
  if(elapsed<0||temperature!==null&&(temperature < -55||temperature>125))throw Error('온도 또는 경과 시간의 범위를 확인하세요.');
  if(typeof r.state!=='string'||r.state.length>100||typeof r.time!=='string'||r.time.length>100)throw Error('측정 시각 또는 상태 형식을 확인하세요.');
- const set=finiteValue(r.setNumber,'세트 번호');if(!Number.isInteger(set)||set<1||set>8)throw Error('세트 번호는 1~8이어야 합니다.');
+ const set=finiteValue(r.setNumber,'세트 번호');if(!Number.isInteger(set)||set<1||set>9)throw Error('세트 번호는 1~9이어야 합니다.');
  const out={ph,temperature,elapsed,time:r.time,state:r.state,setNumber:set};
  if(kind==='points'){
   out.id=finiteValue(r.id,'번호');out.volume=finiteValue(r.volume,'투입 부피');out.waitSeconds=finiteValue(r.waitSeconds,'투입 후 경과',true);
@@ -59,7 +59,7 @@ function csvToAnalysis(text,name){
  return {kind,profile:cleanProfile(profile),set,rows:clean,name};
 }
 function validateAnalysisDataset(data){
- const profile=cleanProfile(data.profile),set=finiteValue(data.set,'세트 번호');if(!Number.isInteger(set)||set<1||set>8)throw Error('세트 번호를 확인하세요.');
+ const profile=cleanProfile(data.profile),set=finiteValue(data.set,'세트 번호');if(!Number.isInteger(set)||set<1||set>9)throw Error('세트 번호를 확인하세요.');
  const out={profile,set,points:[],live:[],sources:[]};
  for(const kind of ['points','live']){if(!Array.isArray(data[kind])||data[kind].length>50000)throw Error('측정 기록은 종류별로 50,000개 이하이어야 합니다.');out[kind]=data[kind].map(r=>cleanAnalysisRow(r,kind));if(out[kind].some(r=>r.setNumber!==set))throw Error('한 실험의 세트 번호가 일치하지 않습니다.');out[kind].sort((a,b)=>a.elapsed-b.elapsed);}
  if(!out.points.length&&!out.live.length)throw Error('분석할 측정 기록이 없습니다.');

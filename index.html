@@ -85,7 +85,7 @@
  <div class="workspace">
   <aside class="controls">
    <section class="paper progress-guide"><h2>지금 할 일</h2><p id="nextExperimentStep" role="status">① 아두이노를 연결하고 온도와 pH 수신을 확인하세요.</p><ol><li>연결과 세트 번호 확인</li><li>기록 시작 · 0 mL 측정점 저장</li><li>용액 투입 · 타이머 리셋</li><li>2분간 기다리며 관찰</li><li>현재 눈금·색깔 확인 · 측정점 저장</li><li>반복 후 기록 종료</li><li>두 CSV 저장 · 결과 분석</li></ol><p id="measurementSaveChecklist" class="hint"></p></section>
-   <section class="paper"><div class="section-label">01 <h2>측정 준비</h2><label class="set-picker" for="setNumber">측정 세트<select id="setNumber"><option value="1">1번 세트</option><option value="2">2번 세트</option><option value="3">3번 세트</option><option value="4">4번 세트</option><option value="5">5번 세트</option><option value="6">6번 세트</option><option value="7">7번 세트</option><option value="8">8번 세트</option></select></label></div>
+   <section class="paper"><div class="section-label">01 <h2>측정 준비</h2><label class="set-picker" for="setNumber">측정 세트<select id="setNumber"><option value="1">1번 세트</option><option value="2">2번 세트</option><option value="3">3번 세트</option><option value="4">4번 세트</option><option value="5">5번 세트</option><option value="6">6번 세트</option><option value="7">7번 세트</option><option value="8">8번 세트</option><option value="9">9번 세트</option></select></label></div>
     <div class="button-row"><button id="connect">아두이노 연결</button><button id="disconnect" class="secondary" disabled>연결 해제</button></div>
     <div class="connection-status" role="status"><span id="connectionLights" class="signal" data-state="disconnected" role="img" aria-label="연결 안 됨"><i class="red"></i><i class="yellow"></i><i class="green"></i></span><span id="status">연결을 기다리고 있습니다.</span></div>
     <div class="readings"><div><span>온도</span><div id="value">— <small>℃</small></div></div><div><span>pH</span><div id="phValue">—</div></div></div>
@@ -157,5 +157,5 @@
 
 <section class="paper session-bar no-print" aria-label="자동 저장"><p id="autosaveStatus" role="status">이 브라우저의 저장 공간을 확인하고 있습니다.</p><small>같은 노트북·브라우저에서 이어갈 수 있습니다. 공용 노트북에서는 개인 정보를 확인하세요. 다른 기기로 옮길 때는 전체 이어하기 파일을 저장하세요.</small><div class="button-row"><button id="saveSessionFile" class="secondary">전체 이어하기 파일 저장</button><label class="secondary">이어하기 파일 열기<input id="loadSessionFile" type="file" accept=".json" hidden></label><button id="newSession" class="secondary">새 실험 시작</button></div><div id="resumePanel" hidden><p id="resumeDescription"></p><button id="resumeSession" class="primary">이전 실험 이어하기</button><button id="discardSession" class="secondary">이전 기록 지우고 시작</button></div></section>
 </main>
-<script src="notebook.js?v=20261021-session"></script><script src="app.js?v=20261021-session"></script><script src="charts.js"></script><script src="analysis.js?v=20261021-session"></script><script src="virtual.js?v=20261021-session"></script><script src="session.js?v=20261021-submit"></script>
+<script src="notebook.js?v=20261021-session"></script><script src="app.js?v=20261021-session"></script><script src="charts.js"></script><script src="analysis.js?v=20261021-set9"></script><script src="virtual.js?v=20261021-session"></script><script src="session.js?v=20261021-set9"></script>
 </body></html>
