@@ -18,3 +18,62 @@ button,input,select,pre,svg text{font-family:'Nanum Gothic','Malgun Gothic',sans
 
 /* 페이지 하단의 간결한 저장 도구 */
 .session-bar{max-width:none;margin:24px 0 0;padding:14px 18px;border-radius:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"status actions" "note note" "resume resume";align-items:center;gap:6px 18px}.session-bar #autosaveStatus{grid-area:status;margin:0;font-size:13px;line-height:1.65;font-weight:400;overflow-wrap:anywhere}.session-bar>small{grid-area:note;font-size:11px;line-height:1.6}.session-bar>.button-row{grid-area:actions;margin:0;gap:6px}.session-bar button,.session-bar label.secondary{font-size:12px;line-height:1.45;padding:7px 10px;font-weight:600}.session-bar #resumePanel{grid-area:resume;padding:12px;margin-top:6px}.session-bar #resumeDescription{font-size:13px;margin:0 0 8px}@media(max-width:900px){.session-bar{grid-template-columns:1fr;grid-template-areas:"status" "actions" "note" "resume";gap:8px}.session-bar>.button-row{flex-wrap:wrap}}
+
+/* 실험 조작과 그래프를 같은 높이에 배치 */
+@media(min-width:901px){
+ body:has(#experiment:not([hidden])) main{padding:16px 24px}
+ #experiment .lab-header{padding:0 0 12px;gap:12px;min-height:60px}
+ #experiment .lab-header h1{font-size:23px}
+ #experiment .lab-header .eyebrow{font-size:10px;margin-bottom:3px}
+ #experiment .lab-header p{display:none}
+ #experiment .researcher{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;max-width:none;font-size:12px}
+ #experiment .researcher #openGuide,#experiment .researcher #openAnalysis{display:inline-block;margin:0;font-size:12px;padding:7px 10px}
+ #experiment .workspace{grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}
+ #experiment .controls{display:block}
+ #experiment .measurement-setup{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:0 24px;padding:12px 16px;margin-bottom:10px}
+ #experiment .setup-connect{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center}
+ #experiment .setup-connect .section-label{margin:0;gap:8px}
+ #experiment .setup-connect .button-row{justify-self:end;flex-wrap:nowrap}
+ #experiment .setup-connect .connection-status{margin:0;font-size:12px}
+ #experiment #updated{margin:0;text-align:right;font-size:11px}
+ #experiment .measurement-setup .readings{margin:0;padding:0;border:0;gap:18px;align-self:center}
+ #experiment #value,#experiment #phValue{font-size:29px}
+ #experiment .setup-help{grid-column:1/-1;margin:4px 0 0;font-size:11px}
+ #experiment .setup-help[open]{border-top:1px solid var(--line);padding-top:8px}
+ #experiment .progress-guide{display:flex;gap:6px 14px;align-items:center;flex-wrap:wrap;padding:8px 14px;margin-bottom:12px}
+ #experiment .progress-guide h2{font-size:12px}
+ #experiment #nextExperimentStep{font-size:12px;font-weight:600;flex:1;margin:0}
+ #experiment .progress-guide details{margin:0;font-size:11px}
+ #experiment #measurementSaveChecklist{flex-basis:100%;font-size:10px;margin:0}
+ #experiment .progress-guide ol{font-size:12px}
+ #experiment .measurement-controls,#experiment .results{padding:14px}
+ #experiment .workspace .section-label{margin-bottom:10px}
+ #experiment .workspace h2{font-size:16px}
+ #experiment .record-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+ #experiment .record-actions button{padding:7px 10px;font-size:12px}
+ #experiment #recordStatus{font-size:11px;margin:0}
+ #experiment .timer-box{padding:9px 10px;margin:10px 0;gap:8px}
+ #experiment #timerDisplay{font-size:28px}
+ #experiment #timerNote{font-size:10px}
+ #experiment .measurement-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+ #experiment .burette-fields{display:contents}
+ #experiment .measurement-fields label{font-size:11px}
+ #experiment .measurement-fields input,#experiment .measurement-fields select{font-size:13px;padding:7px;margin-top:4px}
+ #experiment .volume{font-size:15px;margin:8px 0}
+ #experiment #pointConfirmation{font-size:11px;padding:6px 8px;line-height:1.5}
+ #experiment #savePoint{margin-top:8px;padding:9px;font-size:13px}
+ #experiment #pointStatus{font-size:11px;line-height:1.6;margin:7px 0}
+ #experiment .record-help{margin-top:8px;font-size:11px}
+ #experiment .results .graphs{grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+ #experiment .results .chart-card{padding:9px}
+ #experiment .results .chart-card h3{font-size:13px}
+ #experiment .results .hint{font-size:11px}
+ #experiment .results .table-heading{margin-top:12px}
+ #experiment .results .table-wrap{min-height:0;max-height:240px;overflow:auto;margin:8px 0}
+ #experiment .results thead{position:sticky;top:0;z-index:1}
+ #experiment .results td,#experiment .results th{padding:7px 4px}
+}
+@media(min-width:1201px){#experiment .workspace{grid-template-columns:380px minmax(0,1fr)}}
+@media(max-width:900px){#experiment .workspace{grid-template-columns:1fr}#experiment .controls{display:block}#experiment .measurement-setup,#experiment .progress-guide{margin-bottom:14px}#experiment .measurement-setup .readings{margin:10px 0;padding:10px 0}#experiment .results .table-wrap{min-height:0;max-height:320px;overflow:auto}.measurement-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.measurement-fields .burette-fields{display:contents}.measurement-fields>label{grid-column:1/-1}}
+
+@media(min-width:901px){#experiment .measurement-setup{padding:10px 16px}#experiment .setup-connect .button-row button{font-size:12px;padding:7px 10px}#experiment .progress-guide{gap:6px 12px}#experiment #measurementSaveChecklist{flex-basis:auto;order:2}#experiment .progress-guide .procedure-help{order:3}#experiment .results .empty{padding:14px 8px}#experiment .results .table-wrap{max-height:190px}}
