@@ -7,7 +7,7 @@ function claimSession(){if(sessionChannel)sessionChannel.postMessage('active');}
 let sessionDB=null,pendingSession=null,sessionReady=false,sessionDirty=false,sessionSaving=false,sessionRevision=0;
 function markSessionChanged(){sessionDirty=true;sessionRevision++;}
 function sessionFields(ids){return Object.fromEntries(ids.map(id=>[id,sessionEl(id).value]));}
-function captureSession(){return {format:'neutralization-session',version:1,savedAt:Date.now(),profile:studentProfile,form:sessionFields(['grade','classroom','studentNumber','studentName','groupName']),predictions:sessionFields(predictionIds),measurement:{set:Number(setNumber.value),startedAt,records,points,nextPointId,recordSegment,pointRevision,exportedPointRevision,exportedCount,initial:initialReading.value,current:currentReading.value,color:sessionEl('solutionColor').value,timerAt:timerStartedAt===null?null:Date.now()-timerElapsed()*1000},analysis:analysisData,virtual:virtualData,virtualForm:sessionFields(['virtualInitialVolume','virtualConditions']),author:reportAuthor(),answers:reportValues(),page:['guide','experiment','analysis'].find(id=>!sessionEl(id).hidden)||'welcome'};}
+function captureSession(){return {format:'neutralization-session',version:1,savedAt:Date.now(),profile:studentProfile,form:sessionFields(['grade','classroom','studentNumber','studentName','groupName']),predictions:sessionFields(predictionIds),measurement:{set:Number(setNumber.value),startedAt,records,points,nextPointId,recordSegment,pointRevision,exportedPointRevision,exportedCount,initial:initialReading.value,current:currentReading.value,color:sessionEl('solutionColor').value,timerAt:timerCycleStartedAt,timer:exportTimerState()},analysis:analysisData,virtual:virtualData,virtualForm:sessionFields(['virtualInitialVolume','virtualConditions']),author:reportAuthor(),answers:reportValues(),page:['guide','experiment','analysis'].find(id=>!sessionEl(id).hidden)||'welcome'};}
 function validateSession(s){
  if(!s||s.format!=='neutralization-session'||s.version!==1||!Number.isFinite(s.savedAt))throw Error('이 프로그램의 전체 이어하기 파일이 아닙니다.');
  const strings=(obj,ids,max)=>{if(!obj||ids.some(id=>typeof obj[id]!=='string'||obj[id].length>max))throw Error('작성 내용 형식을 확인하세요.');};
@@ -19,6 +19,7 @@ function validateSession(s){
  for(const r of m.records)if(!Number.isFinite(r.raw)||r.raw<0||r.raw>1023)throw Error('센서 원시값을 확인하세요.');
  for(const key of ['nextPointId','recordSegment','pointRevision','exportedPointRevision','exportedCount'])if(!Number.isInteger(m[key])||m[key]<0)throw Error('기록 상태를 확인하세요.');
  strings(m,['initial','current','color'],100);if(!['무색','붉은색'].includes(m.color)||m.timerAt!==null&&(!Number.isFinite(m.timerAt)||m.timerAt>Date.now()))throw Error('관찰 상태를 확인하세요.');
+ if(m.timer!==undefined)validateTimerState(m.timer);
  if(!s.analysis||!Array.isArray(s.analysis.points)||!Array.isArray(s.analysis.live))throw Error('분석 데이터 형식을 확인하세요.');if(s.analysis.profile)validateAnalysisDataset(s.analysis);else if(s.analysis.points.length||s.analysis.live.length)throw Error('분석 학생 정보가 없습니다.');validateVirtualData(s.virtual);if(s.virtualForm)strings(s.virtualForm,['virtualInitialVolume','virtualConditions'],1000);
  if(!['welcome','guide','experiment','analysis'].includes(s.page))throw Error('화면 정보를 확인하세요.');return s;
 }
@@ -26,7 +27,7 @@ function applySession(s){
  validateSession(s);const m=s.measurement;studentProfile=s.profile;for(const [id,value] of Object.entries(s.form))if(['grade','classroom','studentNumber','studentName','groupName'].includes(id))sessionEl(id).value=value;
  for(const id of predictionIds)sessionEl(id).value=s.predictions[id];for(const id of authorIds)sessionEl(id).value=s.author[id];for(const id of resultFieldIds)sessionEl(id).value=s.answers[id];
  records=m.records;points=m.points;startedAt=m.startedAt;nextPointId=points.reduce((n,p)=>Math.max(n,p.id+1),Math.max(1,m.nextPointId));recordSegment=m.recordSegment+1;pointRevision=m.pointRevision;exportedPointRevision=m.exportedPointRevision;exportedCount=m.exportedCount;
- recording=false;latestSample=null;lastReceived=0;deletedPoint=null;sessionEl('undoDelete').hidden=true;setNumber.value=String(m.set);initialReading.value=m.initial;currentReading.value=m.current;initialReading.disabled=points.length>0;sessionEl('solutionColor').value=m.color;timerStartedAt=m.timerAt===null?null:performance.now()-(Date.now()-m.timerAt);
+ recording=false;latestSample=null;lastReceived=0;deletedPoint=null;sessionEl('undoDelete').hidden=true;setNumber.value=String(m.set);initialReading.value=m.initial;currentReading.value=m.current;initialReading.disabled=points.length>0;sessionEl('solutionColor').value=m.color;restoreTimerState(m.timer===undefined?{elapsedMs:m.timerAt===null?0:Math.max(0,s.savedAt-m.timerAt),running:m.timerAt!==null,cycleStartedAt:m.timerAt}:m.timer,s.savedAt);
  analysisData=s.analysis;analysisDirty=false;restoreVirtualData(s.virtual);sessionEl('studentSummary').textContent=studentProfile?formatAnalysisProfile(studentProfile,m.set):'';
  recordTable.replaceChildren();for(const r of records.slice(-5).reverse()){const tr=document.createElement('tr');for(const v of [records.indexOf(r)+1,shortTime(r.time),r.elapsed.toFixed(1),r.temperature===null?'—':r.temperature.toFixed(2),r.ph.toFixed(2),r.state]){const td=document.createElement('td');td.textContent=String(v);tr.appendChild(td);}recordTable.appendChild(tr);}
  clearValue();renderPointsTable();renderVolumeCharts();renderTimeCharts();renderAnalysis();renderTimer();refreshRecording('이전 기록 복원');recordStatus.textContent='이전 기록 복원 · '+records.length+'개 · USB를 다시 연결한 뒤 기록 재개';
@@ -47,9 +48,10 @@ function updateStudentGuidance(){
  else if(!lastReceived)message='① 아두이노를 연결하고 온도와 pH 수신을 확인하세요.';
  else if(!recording)message='② 기록 시작을 누르고 초기·현재 눈금을 같게 입력하세요.';
  else if(!zero)message='② 용액 투입 전, 누적 0 mL 측정점을 저장하세요.';
- else if(timerStartedAt===null)message='③ 용액을 넣고 타이머 리셋을 누르세요.';
- else if(timerElapsed()<120)message='④ 이번 투입 후 1분이 될 때까지 관찰하세요.';
- else if(points.length&&points[points.length-1].waitSeconds!==null&&points[points.length-1].receivedAt&&points[points.length-1].receivedAt>=Date.now()-timerElapsed()*1000)message='⑥ 이번 측정점을 저장했습니다. 다음 용액 투입 후 타이머를 리셋하거나 기록을 종료하세요.';
+ else if(timerCycleStartedAt===null)message='③ 새 용액을 넣고 타이머 시작을 누르세요.';
+ else if(!timerIsRunning())message='④ 타이머 정지 중입니다. 시작을 누르면 이어서 잽니다.';
+ else if(timerElapsed()<MEASUREMENT_WAIT_SECONDS)message='④ 이번 투입 후 1분이 될 때까지 관찰하세요.';
+ else if(points.length&&points[points.length-1].waitSeconds!==null&&points[points.length-1].receivedAt&&points[points.length-1].receivedAt>=timerCycleStartedAt)message='⑥ 이번 측정점을 저장했습니다. 다음 용액 투입 후 타이머 리셋 → 시작을 누르거나 기록을 종료하세요.';
  else message='⑤ 현재 눈금과 색깔을 확인한 뒤 측정점을 저장하세요.';
  sessionEl('nextExperimentStep').textContent=message;sessionEl('pointConfirmation').textContent=v.error?'저장 전 초기·현재 눈금을 확인하세요.':'저장할 값: 누적 '+v.volume.toFixed(2)+' mL · '+sessionEl('solutionColor').value+' · 부피와 색깔을 확인한 뒤 저장하세요.';
  sessionEl('measurementSaveChecklist').textContent='측정점 CSV: '+(!points.length?'기록 없음':pointRevision===exportedPointRevision?'다운로드 요청 완료':'저장 필요')+' / 전체 CSV: '+(!records.length?'기록 없음':records.length===exportedCount?'다운로드 요청 완료':'저장 필요');

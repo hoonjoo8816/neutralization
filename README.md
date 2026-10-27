@@ -5,7 +5,7 @@
 ## GitHub Pages 배포
 
 1. GitHub에 공개 저장소를 만듭니다.
-2. 이 폴더 안의 index.html, style.css, notebook.js, app.js, charts.js, analysis.js, virtual.js, session.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
+2. 이 폴더 안의 index.html, style.css, timer.js, notebook.js, app.js, charts.js, analysis.js, virtual.js, session.js와 fonts 폴더를 저장소 최상위에 올립니다. fonts 안의 글꼴과 OFL.txt를 함께 올려주세요. .nojekyll도 포함합니다.
 3. 저장소 Settings → Pages를 엽니다.
 4. Build and deployment의 Source를 Deploy from a branch로 선택합니다.
 5. Branch는 main, 폴더는 /(root)로 선택하고 Save를 누릅니다.
@@ -53,3 +53,8 @@ ChemCollective 비커 CSV 원본을 분석 화면에서 선택합니다. 초기 
 - 진행 단계, 누적 부피·색깔 확인, 두 CSV 저장 상태, 개인별 파일 저장·제출 안내을 제공합니다. 업로드 완료는 학생이 OneDrive에서 직접 확인합니다.
 - 실제 CSV 및 분석 데이터는 종류별 50,000행, 파일당 50 MB까지 불러올 수 있습니다. 전체 이어하기 파일도 50 MB 제한입니다.
 - 공용 노트북에서는 필요한 파일을 저장한 뒤 새 실험 시작으로 이전 학생 기록을 지우세요. 같은 실험은 한 탭에서만 진행하세요.
+
+## 측정 기준 시간과 타이머
+- 현재 대기 기준은 1분(60초)입니다. timer.js 맨 위의 MEASUREMENT_WAIT_SECONDS를 바꾸면 타이머, 실험 진행 안내, 분석 경고의 기준이 함께 바뀝니다. 설명 문구는 index.html에서도 맞춰주세요.
+- 동그란 시작·정지·리셋 버튼을 사용합니다. 정지는 일시정지, 시작은 이어서 재기, 리셋은 00:00으로 초기화하고 멈추기입니다. 새 용액을 넣을 때 리셋 후 시작하세요. 타이머 정지는 센서 기록을 멈추지 않습니다.
+- 새 이어하기 파일은 타이머의 실행·정지 상태를 보관하고, 기존 timerAt만 있는 파일도 복원합니다.

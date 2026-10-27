@@ -1,12 +1,8 @@
 const profileHeaders=['학년','반','번호','이름','조 이름'];
-let studentProfile=null,timerStartedAt=null;
+let studentProfile=null;
 function profileValues(){return studentProfile?[studentProfile.grade,studentProfile.classroom,studentProfile.studentNumber,studentProfile.studentName,studentProfile.groupName]:['','','','',''];}
 function safeCSV(value){const str=String(value);return /^[=+@-]/.test(str)&&!/^[-+]\d+(\.\d+)?$/.test(str)?"'"+str:str;}
 function shortTime(time){return time.slice(11,19);}
-function timerElapsed(){return timerStartedAt===null?null:(performance.now()-timerStartedAt)/1000;}
-function renderTimer(){const seconds=timerElapsed();document.querySelector('#timerDisplay').textContent=seconds===null?'00:00':String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(Math.floor(seconds%60)).padStart(2,'0');document.querySelector('#timerNote').textContent=seconds===null?'용액 투입 후 리셋을 누르면 시작합니다.':seconds>=120?'1분 경과 · 측정점을 저장하고 변화도 관찰하세요.':'관찰 중 · 1분을 기준으로 변화를 확인하세요.';}
-document.querySelector('#resetTimer').onclick=()=>{timerStartedAt=performance.now();renderTimer();};
-setInterval(renderTimer,250);
 document.querySelector('#studentForm').onsubmit=event=>{
  event.preventDefault();const form=event.currentTarget;if(!form.reportValidity())return;
  const candidate=Object.fromEntries(new FormData(form));for(const key of ['studentName','groupName']){candidate[key]=candidate[key].trim();const field=form.elements[key];field.setCustomValidity(candidate[key]?'':'공백 없이 정보를 입력하세요.');if(!candidate[key]){field.reportValidity();return;}}
