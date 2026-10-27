@@ -89,7 +89,7 @@
     <div class="button-row"><button id="connect">아두이노 연결</button><button id="disconnect" class="secondary" disabled>연결 해제</button></div>
     <div class="connection-status" role="status"><span id="connectionLights" class="signal" data-state="disconnected" role="img" aria-label="연결 안 됨"><i class="red"></i><i class="yellow"></i><i class="green"></i></span><span id="status">연결을 기다리고 있습니다.</span></div>
     <div class="readings"><div><span>온도</span><div id="value">— <small>℃</small></div></div><div><span>pH</span><div id="phValue">—</div></div></div>
-    <small id="phNote">pH 4~10 기준으로 보정한 값입니다.</small><small id="updated">아직 받은 측정값이 없습니다.</small><small class="set-note">세트 선택은 기록 구분용입니다. 각 아두이노에는 해당 세트의 보정값을 적용하세요.</small>
+    <small id="updated">아직 받은 측정값이 없습니다.</small><small class="set-note">세트 선택은 기록 구분용입니다. 각 아두이노에는 해당 세트의 보정값이 적용되어 있습니다.</small>
     <details><summary>연결 도움말</summary><p>USB로 아두이노를 연결하고 Arduino IDE의 시리얼 모니터를 닫으세요. 연결 버튼에서 연결된 기기를 선택합니다.</p><ul class="wiring"><li><strong>온도센서 모듈</strong><br>VCC(+) → UNO 5V<br>GND(−) → UNO GND<br>DATA / 신호(S) → UNO A1</li><li><strong>pH 센서 보드 PH-4502C</strong><br>V+ → UNO 5V<br>G 두 핀 → UNO GND<br>PO → UNO A0<br>TO·DO → 연결하지 않음<br>pH 전극 → 보드의 BNC 단자</li></ul><small>터미널 블록 모듈의 핀 이름을 확인해 연결하세요. 선 색깔보다 VCC·GND·신호 표시를 기준으로 합니다. 통신 속도는 9600입니다.</small></details>
    </section>
    <section class="paper"><div class="section-label">02 <h2>실험과 기록</h2></div>
