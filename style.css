@@ -77,3 +77,26 @@ button,input,select,pre,svg text{font-family:'Nanum Gothic','Malgun Gothic',sans
 @media(max-width:900px){#experiment .workspace{grid-template-columns:1fr}#experiment .controls{display:block}#experiment .measurement-setup,#experiment .progress-guide{margin-bottom:14px}#experiment .measurement-setup .readings{margin:10px 0;padding:10px 0}#experiment .results .table-wrap{min-height:0;max-height:320px;overflow:auto}.measurement-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.measurement-fields .burette-fields{display:contents}.measurement-fields>label{grid-column:1/-1}}
 
 @media(min-width:901px){#experiment .measurement-setup{padding:10px 16px}#experiment .setup-connect .button-row button{font-size:12px;padding:7px 10px}#experiment .progress-guide{gap:6px 12px}#experiment #measurementSaveChecklist{flex-basis:auto;order:2}#experiment .progress-guide .procedure-help{order:3}#experiment .results .empty{padding:14px 8px}#experiment .results .table-wrap{max-height:190px}}
+
+/* 측정 준비와 항상 펼쳐진 실험 순서 */
+#experiment .measurement-top{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;align-items:stretch}
+#experiment .measurement-top .measurement-setup{margin:0;grid-template-columns:minmax(0,1fr) 130px;gap:6px 16px;padding:12px 16px;align-content:start}
+#experiment .measurement-top .setup-connect{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+#experiment .measurement-top .setup-connect .section-label{margin:0}
+#experiment .measurement-top .setup-connect .button-row{justify-self:auto}
+#experiment .measurement-top .connection-status{margin:0}
+#experiment .measurement-top #updated{text-align:left;margin:0}
+#experiment .measurement-top .readings{grid-template-columns:1fr;gap:12px;margin:0;border:0;padding:0;align-self:start}
+#experiment .measurement-top #value,#experiment .measurement-top #phValue{font-size:27px}
+#experiment .measurement-top .setup-help{grid-column:1/-1;margin-top:2px}
+#experiment .measurement-top .progress-guide{display:block;margin:0;padding:12px 16px}
+#experiment .measurement-top .progress-guide h2{font-size:15px;margin:0 0 6px}
+#experiment .measurement-top #nextExperimentStep{font-size:11px;line-height:1.5;padding:5px 8px;margin:0 0 8px;background:#edf3e8;border-radius:6px;font-weight:600}
+#experiment .always-visible-steps{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px;list-style:none;counter-reset:measurement-step;margin:0;padding:0}
+#experiment .always-visible-steps li{display:flex;gap:7px;align-items:flex-start;font-size:12px;line-height:1.5;color:var(--ink);margin:0}
+#experiment .always-visible-steps li:before{counter-increment:measurement-step;content:counter(measurement-step);display:inline-flex;align-items:center;justify-content:center;flex:0 0 18px;height:18px;border-radius:50%;background:#e7eee2;color:var(--green);font-size:10px;font-weight:700}
+#experiment .measurement-top #measurementSaveChecklist{margin:8px 0 0;font-size:10px;line-height:1.5;border-top:1px solid var(--line);padding-top:6px}
+@media(max-width:900px){#experiment .measurement-top{grid-template-columns:1fr}#experiment .measurement-top .measurement-setup{display:grid}}
+@media(max-width:450px){#experiment .always-visible-steps{grid-template-columns:1fr}#experiment .measurement-top .measurement-setup{grid-template-columns:minmax(0,1fr) 95px}}
+
+#experiment .measurement-top .progress-guide h2{font-size:16px}#experiment .measurement-top #nextExperimentStep{font-size:12px}#experiment .always-visible-steps{gap:4px 14px}#experiment .always-visible-steps li{font-size:13px;line-height:1.5}#experiment .always-visible-steps li:before{flex-basis:20px;height:20px;font-size:11px}
