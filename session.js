@@ -50,7 +50,7 @@ function updateStudentGuidance(){
  else if(!zero)message='② 용액 투입 전, 누적 0 mL 측정점을 저장하세요.';
  else if(timerCycleStartedAt===null)message='③ 새 용액을 넣고 타이머 시작을 누르세요.';
  else if(!timerIsRunning())message='④ 타이머 정지 중입니다. 시작을 누르면 이어서 잽니다.';
- else if(timerElapsed()<MEASUREMENT_WAIT_SECONDS)message='④ 이번 투입 후 1분이 될 때까지 관찰하세요.';
+ else if(timerElapsed()<MEASUREMENT_WAIT_SECONDS)message='④ 이번 투입 후 '+(MEASUREMENT_WAIT_SECONDS/60)+'분이 될 때까지 관찰하세요.';
  else if(points.length&&points[points.length-1].waitSeconds!==null&&points[points.length-1].receivedAt&&points[points.length-1].receivedAt>=timerCycleStartedAt)message='⑥ 이번 측정점을 저장했습니다. 다음 용액 투입 후 타이머 리셋 → 시작을 누르거나 기록을 종료하세요.';
  else message='⑤ 현재 눈금과 색깔을 확인한 뒤 측정점을 저장하세요.';
  sessionEl('nextExperimentStep').textContent=message;sessionEl('pointConfirmation').textContent=v.error?'저장 전 초기·현재 눈금을 확인하세요.':'저장할 값: 누적 '+v.volume.toFixed(2)+' mL · '+sessionEl('solutionColor').value+' · 부피와 색깔을 확인한 뒤 저장하세요.';
