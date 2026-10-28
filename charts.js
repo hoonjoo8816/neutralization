@@ -50,8 +50,8 @@ function drawChart(id, rows, xKey, yKey, xLabel, yLabel, color) {
   add('path', { d: path, fill: 'none', stroke: color, 'stroke-width': 2 });
   for (const r of valid) {
     const outside = yKey === 'ph' && (r.ph < 4 || r.ph > 10 || r.outside || (r.state || '').includes('보정 범위 밖'));
-    const dot = svgNode('circle', { cx: sx(r[xKey]), cy: sy(r[yKey]), r: xKey === 'volume' ? 4 : 2.5, fill: outside ? '#a96300' : color });
-    dot.appendChild(svgNode('title', {}, xLabel + ': ' + r[xKey].toFixed(xKey === 'volume' ? 2 : 1) + ' · ' + yLabel + ': ' + r[yKey].toFixed(2) + (outside ? ' · 보정 범위 밖 추정값' : '')));
+    const dot = svgNode('circle', { cx: sx(r[xKey]), cy: sy(r[yKey]), r: xKey === 'volume' ? 4 : 2.5, fill: color });
+    dot.appendChild(svgNode('title', {}, xLabel + ': ' + r[xKey].toFixed(xKey === 'volume' ? 2 : 1) + ' · ' + yLabel + ': ' + r[yKey].toFixed(2) + (outside ? ' · 보정 범위(4~10) 밖' : '')));
     target.appendChild(dot);
   }
   const ys = valid.map(r => r[yKey]);

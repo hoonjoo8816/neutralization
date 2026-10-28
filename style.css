@@ -102,3 +102,6 @@ button,input,select,pre,svg text{font-family:'Nanum Gothic','Malgun Gothic',sans
 #experiment .measurement-top .progress-guide h2{font-size:16px}#experiment .measurement-top #nextExperimentStep{font-size:12px}#experiment .always-visible-steps{gap:4px 14px}#experiment .always-visible-steps li{font-size:13px;line-height:1.5}#experiment .always-visible-steps li:before{flex-basis:20px;height:20px;font-size:11px}
 
 .timer-buttons{display:flex;gap:6px;align-items:center;flex-shrink:0}#experiment .timer-box button.timer-round{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:44px;height:44px;min-width:44px;padding:0;border-radius:50%;font-size:10px;line-height:1.2;border:1px solid #cbd8ce;font-weight:600}.timer-round svg{width:14px;height:14px}.timer-round.timer-start{background:#386d5f;color:#fff}.timer-round.timer-stop{background:#edf2e9;color:#386d5f}.timer-round.timer-reset{background:#f6eee4;color:#8c6039}.timer-round:focus-visible{outline:3px solid #c7774377;outline-offset:3px}
+
+.measurement-fields>.color-help{grid-column:1/-1;display:block;font-size:11px;color:var(--muted);line-height:1.5;margin-top:-4px}
+#savePoint+.hint{margin-top:6px}

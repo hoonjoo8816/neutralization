@@ -1,4 +1,6 @@
 const profileHeaders=['학년','반','번호','이름','조 이름'];
+// 관찰 색깔 선택지. 분홍·붉은색이 유지되는 두 값은 결과 요약의 ‘처음 분홍·붉은색’ 판단에 사용합니다.
+const COLOR_OPTIONS=['무색','잠깐 분홍 후 무색','연한 분홍색','붉은색'],PINK_COLORS=['연한 분홍색','붉은색'];
 let studentProfile=null;
 function profileValues(){return studentProfile?[studentProfile.grade,studentProfile.classroom,studentProfile.studentNumber,studentProfile.studentName,studentProfile.groupName]:['','','','',''];}
 function safeCSV(value){const str=String(value);return /^[=+@-]/.test(str)&&!/^[-+]\d+(\.\d+)?$/.test(str)?"'"+str:str;}
@@ -31,7 +33,7 @@ function renderPointsTable(){
  pointRows.replaceChildren();document.querySelector('#pointCount').textContent=points.length+'개';document.querySelector('#pointsEmpty').hidden=points.length>0;
  for(const p of points.slice(-10).reverse()){
   const row=document.createElement('tr'),cell=document.createElement('td'),button=document.createElement('button');button.className='delete-button';button.setAttribute('aria-label',p.id+'번 측정점 삭제');button.title=p.id+'번 측정점 삭제';button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7M14 10v7"/></svg>';button.onclick=()=>deletePoint(p.id);cell.appendChild(button);row.appendChild(cell);
-  for(const value of [p.id,shortTime(p.time),p.volume.toFixed(2),p.temperature.toFixed(2),p.ph.toFixed(2),p.color,p.waitSeconds===null?'—':p.waitSeconds.toFixed(1),p.state]){const td=document.createElement('td');td.textContent=String(value);row.appendChild(td);}pointRows.appendChild(row);
+  for(const value of [p.id,shortTime(p.time),p.volume.toFixed(2),p.temperature===null?'—':p.temperature.toFixed(2),p.ph.toFixed(2),p.color,p.waitSeconds===null?'—':p.waitSeconds.toFixed(1),p.state]){const td=document.createElement('td');td.textContent=String(value);row.appendChild(td);}pointRows.appendChild(row);
  }
 }
 function deletePoint(id){const index=points.findIndex(p=>p.id===id);if(index<0)return;deletedPoint=points.splice(index,1)[0];pointRevision++;document.querySelector('#undoDelete').hidden=false;initialReading.disabled=points.length>0;renderPointsTable();renderVolumeCharts();refreshPoints();pointStatus.textContent=id+'번 측정점을 삭제했습니다. 되돌리기로 복구할 수 있습니다.';}

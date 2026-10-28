@@ -11,14 +11,14 @@ function captureSession(){return {format:'neutralization-session',version:1,save
 function validateSession(s){
  if(!s||s.format!=='neutralization-session'||s.version!==1||!Number.isFinite(s.savedAt))throw Error('이 프로그램의 전체 이어하기 파일이 아닙니다.');
  const strings=(obj,ids,max)=>{if(!obj||ids.some(id=>typeof obj[id]!=='string'||obj[id].length>max))throw Error('작성 내용 형식을 확인하세요.');};
- strings(s.form,['grade','classroom','studentNumber','studentName','groupName'],100);strings(s.predictions,predictionIds,1000);strings(s.answers,resultFieldIds,5000);validateReportAuthor(s.author);if(s.profile)cleanProfile(s.profile);
+ strings(s.form,['grade','classroom','studentNumber','studentName','groupName'],100);strings(s.predictions,predictionIds,1000);if(s.answers&&typeof s.answers==='object'&&s.answers.resultIons===undefined)s.answers.resultIons='';strings(s.answers,resultFieldIds,5000);validateReportAuthor(s.author);if(s.profile)cleanProfile(s.profile);
  const m=s.measurement;if(!m||!Number.isInteger(m.set)||m.set<1||m.set>9||!Array.isArray(m.records)||!Array.isArray(m.points)||m.records.length>50000||m.points.length>50000)throw Error('측정 기록 형식을 확인하세요.');
  if((m.records.length||m.points.length)&&(!s.profile||!Number.isFinite(m.startedAt)||m.startedAt<=0))throw Error('측정 시작 정보가 없습니다.');
  if(m.records.length||m.points.length)validateAnalysisDataset({profile:s.profile,set:m.set,live:m.records,points:m.points});
  for(const p of m.points){for(const key of ['initial','current','raw'])if(!Number.isFinite(p[key])||p[key]<0)throw Error('측정점 눈금 정보를 확인하세요.');if(p.current<p.initial||Math.abs(p.current-p.initial-p.volume)>0.011||typeof p.sampleTime!=='string')throw Error('측정점 부피 정보를 확인하세요.');}
  for(const r of m.records)if(!Number.isFinite(r.raw)||r.raw<0||r.raw>1023)throw Error('센서 원시값을 확인하세요.');
  for(const key of ['nextPointId','recordSegment','pointRevision','exportedPointRevision','exportedCount'])if(!Number.isInteger(m[key])||m[key]<0)throw Error('기록 상태를 확인하세요.');
- strings(m,['initial','current','color'],100);if(!['무색','붉은색'].includes(m.color)||m.timerAt!==null&&(!Number.isFinite(m.timerAt)||m.timerAt>Date.now()))throw Error('관찰 상태를 확인하세요.');
+ strings(m,['initial','current','color'],100);if(!COLOR_OPTIONS.includes(m.color)||m.timerAt!==null&&(!Number.isFinite(m.timerAt)||m.timerAt>Date.now()))throw Error('관찰 상태를 확인하세요.');
  if(m.timer!==undefined)validateTimerState(m.timer);
  if(!s.analysis||!Array.isArray(s.analysis.points)||!Array.isArray(s.analysis.live))throw Error('분석 데이터 형식을 확인하세요.');if(s.analysis.profile)validateAnalysisDataset(s.analysis);else if(s.analysis.points.length||s.analysis.live.length)throw Error('분석 학생 정보가 없습니다.');validateVirtualData(s.virtual);if(s.virtualForm)strings(s.virtualForm,['virtualInitialVolume','virtualConditions'],1000);
  if(!['welcome','guide','experiment','analysis'].includes(s.page))throw Error('화면 정보를 확인하세요.');return s;

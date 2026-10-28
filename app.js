@@ -8,6 +8,7 @@ function phDisplayColor(ph){const t=Math.max(0,Math.min(14,ph))/14;return `rgb($
 const startRecord=document.querySelector('#startRecord'),stopRecord=document.querySelector('#stopRecord'),download=document.querySelector('#download'),recordStatus=document.querySelector('#recordStatus'),recordTable=document.querySelector('#records');
 let recording=false,startedAt=null,records=[],exportedCount=0,recordSegment=0;
 const initialReading=document.querySelector('#initialReading'),currentReading=document.querySelector('#currentReading'),volumeDisplay=document.querySelector('#volumeDisplay'),savePoint=document.querySelector('#savePoint'),downloadPoints=document.querySelector('#downloadPoints'),pointStatus=document.querySelector('#pointStatus'),pointRows=document.querySelector('#pointRows');
+let recentSamples=[];const AVERAGE_WINDOW_MS=5000;
 let latestSample=null,points=[],exportedPointCount=0,pointRevision=0,exportedPointRevision=0,nextPointId=1,deletedPoint=null;
 function readVolume(){
  const parse=input=>{const str=input.value.trim();if(!/^\d+(?:\.\d{1,2})?$/.test(str))return null;const n=Number(str);return Number.isFinite(n)&&n>=0?n:null;};
@@ -20,21 +21,29 @@ function readVolume(){
 }
 function refreshPoints(){
  const v=readVolume();volumeDisplay.textContent='누적 투입 부피: '+(v.error?'—':v.volume.toFixed(2))+' mL';
- savePoint.disabled=!recording||!!v.error||!latestSample||latestSample.temperature===null||Date.now()-latestSample.receivedAt>6000;
+ savePoint.disabled=!recording||!!v.error||!latestSample||Date.now()-latestSample.receivedAt>6000;
  downloadPoints.disabled=recording||!points.length;
 }
 initialReading.oninput=currentReading.oninput=()=>{refreshPoints();const v=readVolume();pointStatus.textContent=v.error||'누적 투입 부피 '+v.volume.toFixed(2)+' mL · 값이 안정되면 측정점을 저장하세요.';};
 function pointsCSV(){
- const header=[...profileHeaders,'세트 번호','번호','저장 시각(노트북 현지 시간)','센서 수신 시각(노트북 현지 시간)','시작 후 경과(초)','초기 눈금(mL)','현재 눈금(mL)','누적 투입 부피(mL)','온도(℃)','pH','pH 원시값','측정 상태','관찰 색깔','투입 후 경과(초)'];
- const rows=points.map((p,i)=>[...profileValues(),p.setNumber,p.id,p.time,p.sampleTime,p.elapsed.toFixed(3),p.initial.toFixed(2),p.current.toFixed(2),p.volume.toFixed(2),p.temperature.toFixed(2),p.ph.toFixed(2),p.raw.toFixed(1),p.state,p.color,p.waitSeconds===null?'':p.waitSeconds.toFixed(1)]);
+ const header=[...profileHeaders,'세트 번호','번호','저장 시각(노트북 현지 시간)','센서 수신 시각(노트북 현지 시간)','시작 후 경과(초)','초기 눈금(mL)','현재 눈금(mL)','누적 투입 부피(mL)','온도(℃)','pH','pH 원시값','측정 상태','관찰 색깔','투입 후 경과(초)','평균한 측정값 수'];
+ const rows=points.map((p,i)=>[...profileValues(),p.setNumber,p.id,p.time,p.sampleTime,p.elapsed.toFixed(3),p.initial.toFixed(2),p.current.toFixed(2),p.volume.toFixed(2),p.temperature===null?'':p.temperature.toFixed(2),p.ph.toFixed(2),p.raw.toFixed(1),p.state,p.color,p.waitSeconds===null?'':p.waitSeconds.toFixed(1),Number.isInteger(p.sampleCount)?p.sampleCount:'']);
  return '\uFEFF'+[header,...rows].map(row=>row.map(value=>'"'+safeCSV(value).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
+}
+function sampleState(temperature,outside){return [temperature===null?'온도센서 오류':'',outside?'pH 보정 범위 밖':''].filter(Boolean).join(' / ')||'보정 범위 내';}
+// 측정점은 저장 직전 5초 동안 받은 값의 평균입니다. pH 센서의 잡음을 줄입니다.
+function averagedSample(){
+ const cutoff=Date.now()-AVERAGE_WINDOW_MS,list=recentSamples.filter(s=>s.receivedAt>=cutoff);if(!list.length)return latestSample?{...latestSample,sampleCount:1}:null;
+ const mean=values=>values.reduce((a,b)=>a+b,0)/values.length,temps=list.map(s=>s.temperature).filter(t=>t!==null),ph=Math.round(mean(list.map(s=>s.ph))*1000)/1000;
+ return {receivedAt:list[list.length-1].receivedAt,temperature:temps.length?Math.round(mean(temps)*1000)/1000:null,ph,raw:Math.round(mean(list.map(s=>s.raw))*10)/10,outside:list.some(s=>s.outside)||ph<4||ph>10,sampleCount:list.length};
 }
 savePoint.onclick=()=>{
  refreshPoints();if(savePoint.disabled)return;
- const volume=readVolume(),now=new Date(),point={...volume,...latestSample,time:localTimestamp(now),sampleTime:localTimestamp(new Date(latestSample.receivedAt)),elapsed:(now.getTime()-startedAt)/1000,id:nextPointId++,setNumber:Number(setNumber.value),color:document.querySelector('#solutionColor').value.trim()||'미기록',waitSeconds:timerElapsed(),state:latestSample.outside?'pH 보정 범위 밖':'보정 범위 내'};
+ const sample=averagedSample();if(!sample)return;
+ const volume=readVolume(),now=new Date(),point={...volume,...sample,time:localTimestamp(now),sampleTime:localTimestamp(new Date(sample.receivedAt)),elapsed:(now.getTime()-startedAt)/1000,id:nextPointId++,setNumber:Number(setNumber.value),color:document.querySelector('#solutionColor').value.trim()||'미기록',waitSeconds:timerElapsed(),state:sampleState(sample.temperature,sample.outside)};
  points.push(point);pointRevision++;deletedPoint=null;document.querySelector('#undoDelete').hidden=true;initialReading.disabled=true;renderVolumeCharts();
  renderPointsTable();
- pointStatus.textContent=point.id+'번 측정점 저장 · '+point.volume.toFixed(2)+' mL · pH '+point.ph.toFixed(2);refreshPoints();
+ pointStatus.textContent=point.id+'번 측정점 저장 · '+point.volume.toFixed(2)+' mL · pH '+point.ph.toFixed(2)+(point.temperature===null?' · 온도 없음(센서 확인)':' · '+point.temperature.toFixed(2)+' ℃')+' · 최근 '+point.sampleCount+'개 값 평균';refreshPoints();
 };
 downloadPoints.onclick=()=>{if(recording||!points.length)return;const url=URL.createObjectURL(new Blob([pointsCSV()],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='neutralization_points_'+localTimestamp(new Date(startedAt)).replace(/[: .]/g,'-')+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);exportedPointCount=points.length;exportedPointRevision=pointRevision;};
 function refreshRecording(message){
@@ -53,7 +62,7 @@ function csvText(){
 }
 function recordSample(temperature,ph,raw,outside){
  if(!recording)return;
- const now=new Date(),state=[temperature===null?'온도센서 오류':'',outside?'pH 보정 범위 밖':''].filter(Boolean).join(' / ')||'보정 범위 내';
+ const now=new Date(),state=sampleState(temperature,outside);
  const r={time:localTimestamp(now),elapsed:(now.getTime()-startedAt)/1000,segment:recordSegment,setNumber:Number(setNumber.value),temperature,ph,raw,state};records.push(r);
  const tr=document.createElement('tr');
  for(const value of [records.length,shortTime(r.time),r.elapsed.toFixed(1),temperature===null?'—':temperature.toFixed(2),ph.toFixed(2),state]){const td=document.createElement('td');td.textContent=String(value);tr.appendChild(td);}
@@ -64,7 +73,7 @@ stopRecord.onclick=()=>stopRecording();
 download.onclick=()=>{if(recording||!records.length)return;const url=URL.createObjectURL(new Blob([csvText()],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='neutralization_live_'+localTimestamp(new Date(startedAt)).replace(/[: .]/g,'-')+'.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);exportedCount=records.length;};
 window.addEventListener('beforeunload',event=>{if(recording||records.length>exportedCount||pointRevision!==exportedPointRevision){event.preventDefault();event.returnValue='';}});
 
-function clearValue(){latestSample=null;valueEl.innerHTML='— <small>℃</small>';phValue.textContent='—';phValue.style.color='';setSignal(port?'waiting':'disconnected');phNote.textContent='pH 4~10 기준으로 보정한 값입니다.';lastReceived=0;if(recording)stopRecording('수신 중단으로 기록 종료');else refreshRecording();}
+function clearValue(){latestSample=null;recentSamples=[];valueEl.innerHTML='— <small>℃</small>';phValue.textContent='—';phValue.style.color='';setSignal(port?'waiting':'disconnected');phNote.textContent='pH 4~10 범위의 표준 용액으로 보정한 센서입니다.';lastReceived=0;if(recording)stopRecording('수신 중단으로 기록 종료');else refreshRecording();}
 function processLine(line){
  log.textContent=(log.textContent+'\n'+line).split('\n').slice(-12).join('\n');
  const m=/^Temperature:\s*(-?\d+(?:\.\d+)?\s*C|Sensor not detected)\s*\|\s*pH:\s*(-?\d+(?:\.\d+)?)\s*\|\s*raw:\s*(\d+(?:\.\d+)?)(?:\s*\|\s*Outside calibration range)?\s*$/.exec(line);
@@ -75,10 +84,11 @@ function processLine(line){
  if(m[1]==='Sensor not detected'||!Number.isFinite(temperature)||temperature < -55||temperature >125){valueEl.innerHTML='— <small>℃</small>';setConnectionStatus('pH 수신 중 · 온도센서 배선을 확인하세요.','waiting');}
  else{valueEl.innerHTML=temperature.toFixed(2)+' <small>℃</small>';setConnectionStatus('pH와 온도값을 받고 있습니다.','receiving');}
  phValue.textContent=ph.toFixed(2);phValue.style.color=phDisplayColor(ph);
- phNote.textContent=(line.includes('Outside calibration range')||ph<4||ph>10)?'보정 범위(4~10) 밖의 추정값입니다.':'pH 4~10 기준으로 보정한 값입니다.';
+ phNote.textContent=(line.includes('Outside calibration range')||ph<4||ph>10)?'보정 범위(4~10) 밖의 값입니다. 이 실험에서는 자주 나타나며, 변화의 흐름을 보는 데 사용하세요.':'pH 4~10 범위의 표준 용액으로 보정한 값입니다.';
  lastReceived=Date.now();updated.textContent='마지막 수신: '+new Date().toLocaleTimeString('ko-KR');
  const outside=line.includes('Outside calibration range')||ph<4||ph>10;
  latestSample={receivedAt:lastReceived,temperature:Number.isFinite(temperature)&&temperature>=-55&&temperature<=125?temperature:null,ph,raw,outside};
+ recentSamples.push(latestSample);recentSamples=recentSamples.filter(s=>s.receivedAt>=lastReceived-AVERAGE_WINDOW_MS);
  recordSample(latestSample.temperature,ph,raw,outside);refreshRecording();
 }
 async function readLoop(){let buffer='';const decoder=new TextDecoder();try{reader=port.readable.getReader();while(!stopping){const {value,done}=await reader.read();if(done)break;buffer+=decoder.decode(value,{stream:true});const lines=buffer.split('\n');buffer=lines.pop();for(const line of lines)processLine(line.trim());if(buffer.length>4096){buffer='';setConnectionStatus('데이터 형식을 확인하세요. 통신 속도는 9600입니다.','waiting');}}}catch(e){if(!stopping)setConnectionStatus('통신이 중단됐습니다. USB 연결을 확인하고 다시 연결하세요.','disconnected');}finally{if(reader){reader.releaseLock();reader=null;}try{await port.close();}catch{}port=null;connectButton.disabled=false;disconnectButton.disabled=true;clearValue();updated.textContent='연결이 해제되었습니다.';if(stopping)setConnectionStatus('연결을 해제했습니다.','disconnected');else if(!statusEl.textContent.includes('중단'))setConnectionStatus('연결이 종료되었습니다. 다시 연결하세요.','disconnected');}}
